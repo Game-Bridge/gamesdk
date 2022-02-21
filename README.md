@@ -21,6 +21,7 @@
 - src: SDK地址，示例中为固定值，必填
 - data-ad-frequency: 广告的展示频率，默认为"120s"，最小值为"30s"
 - data-gameid: 游戏id
+- data-test: 启用测试模式，启用后将在广告位展示测试广告，如需开启传入"on"。
 
 gamebridge.js加载成功后，在适当的地方执行showAd或type所对应的快捷方法。
 ```
