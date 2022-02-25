@@ -104,11 +104,27 @@ showNext();
 showBrowse();
 ```
 
-### showReward(success, fail)
+### showReward(success, fail, done)
 奖励广告
 #### Params
 - success<function>: 广告完成播放回调函数
 - fail<function>: 广告未完成播放回调函数
+- done<function(placementInfo)>: 广告完成或失败回调函数
+
+##### placementInfo
+- breakType: 广告类型
+- breakName: 广告名称
+- breakStatus 可指明此展示位置的状态，值可以是下面其中一个：
+    - 'notReady': SDK 尚未初始化
+    - 'timeout': 响应时间过长，导致展示位置超时
+    - 'invalid': 展示位置无效并已被忽略。例如，每次网页加载时应只有一个前贴片广告展示位置，后续的前贴片广告都无法投放并显示此状态
+    - 'error': 回调中存在 JavaScript 错误
+    - 'noAdPreloaded': 广告尚未预加载，因此跳过了此展示位置
+    - 'frequencyCapped': 由于向此展示位置应用了频次上限，因此广告未能展示
+    - 'ignored': 用户在到达下一个展示位置之前没有点击奖励提示
+    - 'other': 广告因其他原因未能展示
+    - 'dismissed': 用户在看完激励广告之前将其关闭了
+    - 'viewed': 用户观看了广告
 #### Example
 ```
 showReward(() => {
