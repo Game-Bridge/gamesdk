@@ -51,7 +51,7 @@ gamebridge.js加载成功后，在适当的地方执行showAd或type所对应的
 
 
 ## Open API
-### showAd(type, googleSdkCon)
+### showAd(type, sdkCon)
 展示指定类型的广告
 #### Params
 1.type<string>: 广告类型，['start', 'pause', 'next', 'browse', 'reward', 'preroll']，每个type都有对应的快捷方法，如start对应: showStart()  
