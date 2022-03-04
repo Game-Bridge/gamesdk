@@ -5,6 +5,7 @@
 
 ### Step 2:
 分配游戏ID, 该游戏id用于区分游戏收益。
+从[GameBridge](https://manager.enjoy4fun.com/)获取游戏ID
 
 ### Step 3:
 接入SDK，可以在加载gamebridge.js的同时通过script标签传递一些属性。
