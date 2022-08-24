@@ -12,7 +12,7 @@
 ```
 <script 
     id="gamebridge-sdk"
-    src="https://sdk.gamebridge.games/v1/gamebridge.js" 
+    src="https://sdk.gamebridge.games/v1/gamebridge-sdk.js" 
     data-ad-frequency="30s" 
     data-gameid="gameid">
 </script>
@@ -24,23 +24,60 @@
 - data-gameid: 游戏id
 - data-test: 启用测试模式，启用后将在广告位展示测试广告，如需开启传入"on"。
 
-gamebridge.js加载成功后，在适当的地方执行showAd或type所对应的快捷方法。
+gamebridge-sdk.js加载成功后，在游戏开始时使用以下方法初始化SDK。
 ```
     // get gamebridge sdk version
-    console.log(window.gamebridge.version);
-
-    if(/*游戏开始前*/){
-        window.gamebridge.showAd(type); // or window.gamebridge.showStart();
-    }
+    GameBridgeSDK.init().then(() => {
+        console.log("GameBridge SDK successfully initialized");
+        // fire your function to continue to game
+    }).catch(() => {
+        console.log("Initialized, but the user likely has adblock");
+        // fire your function to continue to game
+    });
 ```
-#### Type options
-- pause: 前贴片广告
-- start: 游戏开始前广告
-- pause: 游戏暂停时广告
-- next: 进入下一关时广告
-- browse: 非游戏主流程时广告，比如:进入商店或修改设置时
-- reward: 奖励广告
-
+为了使您的游戏提供准确的游戏指标，请在游戏开始加载开始和结束时触发以下事件。
+```
+    // start game loading
+    GameBridgeSDK.gameLoadingStart();
+    // finish game loading
+    GameBridgeSDK.gameLoadingFinished();
+```
+接入游戏内事件，以更好的获取游戏内游戏指标，使用 🎮 gameplayStart()来记录用户开始游戏（游戏回合开始，或者游戏取消暂停），使用 🎮 gameplayStop()来记录游戏结束（游戏回合结束，游戏暂停，或者回到主菜单）
+```
+    // first level loads, player clicks anywhere
+    GameBridgeSDK.gameplayStart();
+    // player is playing
+    // player loses round
+    GameBridgeSDK.gameplayStop();
+    // game over screen pops up
+```
+接入插屏广告，commercialBreak用于获取插屏广告，我们建议在用户开始关卡之前（即当用户表现出来想继续玩游戏的意图时）触发插屏广告。
+```
+    // pause your game here if it isn't already
+    GameBridgeSDK.commercialBreak(() => {
+      // you can pause any background music or other audio here
+    }).then(() => {
+      console.log("Commercial break finished, proceeding to game");
+      // if the audio was paused you can resume it here (keep in mind that the function above to pause it might not always get called)
+      // continue your game here
+    });
+```
+接入奖励广告，rewardedBreak用户给用户播放广告以换取游戏特定的奖励时触发，在使用rewardedBreak时，应该事先给玩家说明即将播放广告，切观看完成后会得到相应的奖励。
+```
+    // pause your game here if it isn't already
+    GameBridgeSDK.rewardedBreak(() => {
+      // you can pause any background music or other audio here
+    }).then((success) => {
+        if(success) {
+            // video was displayed, give reward
+        } else {
+            // video not displayed, should not give reward
+        }
+        // if the audio was paused you can resume it here (keep in mind that the function above to pause it might not always get called)
+        console.log("Rewarded break finished, proceeding to game");
+        // continue your game here
+    });
+```
 ### Step 4:
 通过游戏管理后台，创建游戏表单进行提交。
 
@@ -51,87 +88,17 @@ gamebridge.js加载成功后，在适当的地方执行showAd或type所对应的
 游戏验证通过后，将会进行发布。
 
 
-## Open API
-### showAd(type, sdkCon)
-展示指定类型的广告
-#### Params
-1.type<string>: 广告类型，['start', 'pause', 'next', 'browse', 'reward', 'preroll']，每个type都有对应的快捷方法，如start对应: showStart()  
-2.conf<object>: sdk 的配置项, 如: {name: 'xxx', beforeAd: () => {}}  
-  
 #### Example
 ```
-showAd('start', {
-    name: 'xxx',
-    beforeAd: () => {}
-});
-```
-
-### showPreroll(adBreakDone)
-前贴片广告
-#### Params
-- adBreakDone<function>: 
-#### Example
-```
-showPreroll(placementInfo => {
-    console.log('preroll');
-});
-```
-
-### showStart()
-游戏开始前广告
-#### Example
-```
-showStart();
-```
-
-### showPause()
-游戏暂停时广告
-#### Example
-```
-showPause();
-```
-
-### showNext()
-进入下一关时广告
-#### Example
-```
-showNext();
-```
-
-### showBrowse()
-非游戏主流程时广告，比如:进入商店或修改设置时
-#### Example
-```
-showBrowse();
-```
-
-### showReward(success, fail, done)
-奖励广告
-#### Params
-- success<function>: 广告完成播放回调函数
-- fail<function>: 广告未完成播放回调函数
-- done<function(placementInfo)>: 广告完成或失败回调函数
-
-##### placementInfo
-- breakType: 广告类型
-- breakName: 广告名称
-- breakStatus 可指明此展示位置的状态，值可以是下面其中一个：
-    - 'notReady': SDK 尚未初始化
-    - 'timeout': 响应时间过长，导致展示位置超时
-    - 'invalid': 展示位置无效并已被忽略。例如，每次网页加载时应只有一个前贴片广告展示位置，后续的前贴片广告都无法投放并显示此状态
-    - 'error': 回调中存在 JavaScript 错误
-    - 'noAdPreloaded': 广告尚未预加载，因此跳过了此展示位置
-    - 'frequencyCapped': 由于向此展示位置应用了频次上限，因此广告未能展示
-    - 'ignored': 用户在到达下一个展示位置之前没有点击奖励提示
-    - 'other': 广告因其他原因未能展示
-    - 'dismissed': 用户在看完激励广告之前将其关闭了
-    - 'viewed': 用户观看了广告
-#### Example
-```
-showReward(() => {
-    console.log('success');
-}, () => {
-    console.log('fail');
+// gameplay stops (don't forget to fire gameplayStop)
+// fire your mute audio function
+// fire your disable keyboard input function
+GameBridgeSDK.commercialBreak().then(() => {
+    console.log("Commercial break finished, proceeding to game");
+    // fire your unmute audio function
+    // fire your enable keyboard input function
+    GameBridgeSDK.gameplayStart();
+    // fire your function to continue to game
 });
 ```
 
