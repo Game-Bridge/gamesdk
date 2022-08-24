@@ -78,15 +78,6 @@ gamebridge-sdk.js加载成功后，在游戏开始时使用以下方法初始化
         // continue your game here
     });
 ```
-### Step 4:
-通过游戏管理后台，创建游戏表单进行提交。
-
-### Step 5:
-等待验证游戏，一般时间为三个工作日
-
-### Step 6:
-游戏验证通过后，将会进行发布。
-
 
 #### Example
 ```
@@ -101,6 +92,15 @@ GameBridgeSDK.commercialBreak().then(() => {
     // fire your function to continue to game
 });
 ```
+
+### Step 4:
+通过游戏管理后台，创建游戏表单进行提交。
+
+### Step 5:
+等待验证游戏，一般时间为三个工作日
+
+### Step 6:
+游戏验证通过后，将会进行发布。
 
 ## script options
 ### data-ad-frequency
