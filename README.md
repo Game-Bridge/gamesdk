@@ -12,7 +12,7 @@
 ```
 <script 
     id="gamebridge-sdk"
-    src="https://sdk.gamebridge.games/v1/gamebridge-sdk.js" 
+    src="https://sdk.enjoy4fun.com/v1/gamebridge-sdk.js" 
     data-ad-frequency="30s" 
     data-gameid="gameid">
 </script>
