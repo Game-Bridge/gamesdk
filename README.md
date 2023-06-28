@@ -1,119 +1,138 @@
+# Instructions for developers
+## Step 1: 注册账号
+登录[管理端](https://manager.gamebridge.games/login.html), 创建开发者账号。
 
-## Instructions for developers
-### Step 1:
-注册账号
+## Step 2: 创建游戏
+在管理端选择`Developers`下的`Create Game`创建一个新的游戏，创建后填写必要的游戏信息。
 
-### Step 2:
-分配游戏ID, 该游戏id用于区分游戏收益。
-从[GameBridge](https://manager.gamebridge.games/)获取游戏ID
-
-### Step 3:
-接入SDK，可以在加载gamebridge.js的同时通过script标签传递一些属性。
-```
-<script 
-    id="gamebridge-sdk"
-    src="https://sdk.enjoy4fun.com/v1/gamebridge-sdk.js" 
-    data-ad-frequency="30s" 
-    data-gameid="gameid">
+## Step 3: 在游戏内接入SDK
+### 1.Initialize the SDK
+将`gamebridge-sdk.js`放置于head区域内，加载顺序需在游戏脚本之前。
+```html
+<script
+	id="gamebridge-sdk"
+	src="//sdk.enjoy4fun.com/v1/gamebridge-sdk.js"
+	data-test="on"
+	data-gameid="{gameId}">
 </script>
 ```
-#### Script options
-- id: SDK标识，示例中为固定值，必填
-- src: SDK地址，示例中为固定值，必填
-- data-ad-frequency: 广告的展示频率，默认为"120s"，最小值为"30s"
-- data-gameid: 游戏id
-- data-test: 启用测试模式，启用后将在广告位展示测试广告，如需开启传入"on"。
+#### Parameter Info
+- id: 脚本固定标识，必传
+- src: 脚本固定加载地址，必传
+- data-test: 是否启用测试广告，用于广告调试时使用，产品环境该参数需清除。可用值: 'on', 'off'
+- data-gameid: 游戏唯一标识，在管理端创建游戏后生成，必传
 
-gamebridge-sdk.js加载成功后，在游戏开始时使用以下方法初始化SDK。
-```
-    // get gamebridge sdk version
-    GameBridgeSDK.init().then(() => {
-        console.log("GameBridge SDK successfully initialized");
-        // fire your function to continue to game
-    }).catch(() => {
-        console.log("Initialized, but the user likely has adblock");
-        // fire your function to continue to game
-    });
-```
-为了使您的游戏提供准确的游戏指标，请在游戏开始加载开始和结束时触发以下事件。
-```
-    // start game loading
-    GameBridgeSDK.gameLoadingStart();
-    // finish game loading
-    GameBridgeSDK.gameLoadingFinished();
-```
-接入游戏内事件，以更好的获取游戏内游戏指标，使用 🎮 gameplayStart()来记录用户开始游戏（游戏回合开始，或者游戏取消暂停），使用 🎮 gameplayStop()来记录游戏结束（游戏回合结束，游戏暂停，或者回到主菜单）
-```
-    // first level loads, player clicks anywhere
-    GameBridgeSDK.gameplayStart();
-    // player is playing
-    // player loses round
-    GameBridgeSDK.gameplayStop();
-    // game over screen pops up
-```
-接入插屏广告，commercialBreak用于获取插屏广告，我们建议在用户开始关卡之前（即当用户表现出来想继续玩游戏的意图时）触发插屏广告。
-```
-    // pause your game here if it isn't already
-    GameBridgeSDK.commercialBreak(() => {
-      // you can pause any background music or other audio here
-    }).then(() => {
-      console.log("Commercial break finished, proceeding to game");
-      // if the audio was paused you can resume it here (keep in mind that the function above to pause it might not always get called)
-      // continue your game here
-    });
-```
-接入奖励广告，rewardedBreak用户给用户播放广告以换取游戏特定的奖励时触发，在使用rewardedBreak时，应该事先给玩家说明即将播放广告，切观看完成后会得到相应的奖励。
-```
-    // pause your game here if it isn't already
-    GameBridgeSDK.rewardedBreak(() => {
-      // you can pause any background music or other audio here
-    }).then((success) => {
-        if(success) {
-            // video was displayed, give reward
-        } else {
-            // video not displayed, should not give reward
-        }
-        // if the audio was paused you can resume it here (keep in mind that the function above to pause it might not always get called)
-        console.log("Rewarded break finished, proceeding to game");
-        // continue your game here
-    });
-```
-
-#### Example
-```
-// gameplay stops (don't forget to fire gameplayStop)
-// fire your mute audio function
-// fire your disable keyboard input function
-GameBridgeSDK.commercialBreak().then(() => {
-    console.log("Commercial break finished, proceeding to game");
-    // fire your unmute audio function
-    // fire your enable keyboard input function
-    GameBridgeSDK.gameplayStart();
-    // fire your function to continue to game
+`gamebridge-sdk.js`加载后，将在window上挂载`GameBridgeSDK`对象，通过该对象执行初始化方法: `window.GameBridgeSDK.init()`。
+```javascript
+// 执行初始化函数
+window.GameBridgeSDK.init().then(() => {
+    // 建议在这里执行游戏的初始化方法
 });
 ```
 
-### Step 4:
-通过游戏管理后台，创建游戏表单进行提交。
+### 2.Loading Event
+游戏资源加载事件，通过该事件开发者可以向SDK传递资源加载何时开始、何时结束。
+```javascript
+// 游戏资源加载开始时调用，会自动触发前帖片广告
+window.GameBridgeSDK.gameLoadingStart();
 
-### Step 5:
+// 游戏资源加载成功后调用
+window.GameBridgeSDK.gameLoadingFinished();
+```
+
+### 3.Config
+开发者可以通过在window上挂载`GAME_BRIDGE_CONFIG`对象的方式，对SDK进行配置，目前支持的配置项:暂停,恢复。SDK在广告调用或结束时，会通过配置项中的暂停与恢复方法对游戏进行相应的操作。
+```
+window.GAME_BRIDGE_CONFIG = {
+	// 注册游戏暂停事件
+	pause: () => {
+		// 游戏的暂停方法
+	}, 
+	
+	// 注册游戏恢复事件
+	resume: () => {
+		// 游戏的暂停方法
+	}
+}
+```
+
+### 4.Game Event
+为了更好的分析游戏行为，开发者需要在合适的位置调用以下方法，比如说在关卡类游戏的开始位置调用`window.GameBridgeSDK.gameplayStart()`。
+```javascript
+// 回合类游戏: 开始
+window.GameBridgeSDK.roundStart();
+
+// 回合类游戏: 结束
+window.GameBridgeSDK.roundEnd();
+
+// 关卡类游戏: 开始
+window.GameBridgeSDK.gameplayStart();
+
+// 关卡类游戏: 结束
+window.GameBridgeSDK.gameplayStop();
+
+// 欢乐时刻
+window.GameBridgeSDK.happyTime();
+```
+
+### 5.获取SDK状态
+#### SDK ready status
+```javascript
+// 通过window.GameBridgeSDK.ready获取SDK是否就续
+if (window.GameBridgeSDK.ready) {
+    // 已就续
+} else {
+    // 未就续
+}
+```
+#### Whether the current device has ads disabled
+```javascript
+if (window.GameBridgeSDK.isAdBlocked()) {
+    // 当前设备禁用了广告
+} else {
+    // 当前设备没有禁用广告
+}
+```
+
+### 6.Show Ad
+#### commercialBreak
+`commercialBreak`用于展示插屏广告，应在关卡结束或其它处于休息期的时间点触发。
+```javascript
+window.GameBridgeSDK.commercialBreak(() => {
+    // 调用前函数
+}).then((status) => {
+	// 调用完成函数，其中参数status返回当次广告展示状态
+});
+```
+
+#### rewardedBreak
+`rewardedBreak`用于展示奖励类广告，应由用户自主选择是否触发(例如游戏过关后，用户可以选择观看广告获取更多的收益)。
+```javascript
+window.GameBridgeSDK.rewardedBreak().then((status) => {
+	// 调用完成函数，其中参数status返回当次广告展示状态
+});
+```
+
+#### displayAd
+`displayAd`用于展示横幅广告，应当在游戏处于休息期时展示在闲置区域。
+```javascript
+// dom: 需要展示广告的容器
+// size: 需要展示的广告尺寸，如: 300x250
+window.GameBridgeSDK.displayAd(dom, size);
+```
+
+#### destroyAd
+`destroyAd`用于关闭横幅广告，在游戏的休息期即将结束时调用。
+```javascript
+// dom: 需要展示广告的容器
+window.GameBridgeSDK.displayAd(dom);
+```
+
+## Step 4: 提交游戏
+在管理端的游戏列表内，选择版本功能进行版本列表。新建版本，并提交游戏包。
+
+## Step 5: 游戏审核
 等待验证游戏，一般时间为三个工作日
 
-### Step 6:
+## Step 6: 游戏发布
 游戏验证通过后，将会进行发布。
-
-## script options
-### data-ad-frequency
-广告的展示频率，默认为"120s"，最小值为"30s"
-### Example
-```
-<script data-ad-frequency="30s"></script>
-```
-
-### data-gameid
-游戏专属id
-### Example
-```
-<script data-gameid="xxxx"></script>
-```
-  
