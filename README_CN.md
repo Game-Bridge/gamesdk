@@ -116,7 +116,7 @@ window.GameBridgeSDK.rewardedBreak().then((status) => {
 #### displayAd
 `displayAd`用于展示横幅广告，应当在游戏处于休息期时展示在闲置区域。
 ```javascript
-// dom: 需要展示广告的容器
+// dom: 展示广告的容器
 // size: 需要展示的广告尺寸，如: 300x250
 window.GameBridgeSDK.displayAd(dom, size);
 ```
@@ -124,8 +124,8 @@ window.GameBridgeSDK.displayAd(dom, size);
 #### destroyAd
 `destroyAd`用于关闭横幅广告，在游戏的休息期即将结束时调用。
 ```javascript
-// dom: 需要展示广告的容器
-window.GameBridgeSDK.displayAd(dom);
+// dom: 展示广告的容器
+window.GameBridgeSDK.destroyAd(dom);
 ```
 
 ## Step 4: 提交游戏
