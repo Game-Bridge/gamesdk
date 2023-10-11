@@ -114,21 +114,6 @@ window.GameBridgeSDK.rewardedBreak().then((status) => {
 });
 ```
 
-#### displayAd
-`displayAd` is used to display banner ads and should be displayed in idle areas when the game is at rest.
-```javascript
-// dom: Container of the Ads
-// size: Size of the Ads that need to be displayed,such as: 300x250
-window.GameBridgeSDK.displayAd(dom, size);
-```
-
-#### destroyAd
-`destroyAd` is used to close banner ads, It is invoked near the end of the game's break period.
-```javascript
-// dom: Container of the Ads
-window.GameBridgeSDK.destroyAd(dom);
-```
-
 ## Step 4: Submit a game
 In the list of games on the management end, select the version function to perform the version list. Create a new version and submit the game pack.
 
