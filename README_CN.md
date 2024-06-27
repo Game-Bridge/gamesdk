@@ -11,7 +11,7 @@
 ```html
 <script
 	id="gamebridge-sdk"
-	src="//sdk.enjoy4fun.com/v1/gamebridge-sdk.js"
+	src="https://sdk.beesads.com/v1/gamebridge.js"
 	data-test="on"
 	data-gameid="{gameId}">
 </script>
